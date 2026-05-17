@@ -1,3 +1,7 @@
+# =============================================================================
+# tests/export_table.py — Genera la tabla de casos de prueba (entregable)
+# =============================================================================
+
 from __future__ import annotations
 
 import os
@@ -9,6 +13,7 @@ from core.regex_engine import RegexEngine
 from patterns.definitions import PATTERNS
 from validators import FORM_FIELDS, validar_contrasena, validar_email
 
+
 def _run_pattern_case(pattern_key: str, text: str, expect_match: bool) -> str:
     try:
         eng = RegexEngine(PATTERNS[pattern_key]['pattern'])
@@ -17,12 +22,14 @@ def _run_pattern_case(pattern_key: str, text: str, expect_match: bool) -> str:
     except Exception as exc:
         return f'ERROR ({exc})'
 
+
 def _run_validator(fn, text: str, expect_ok: bool) -> str:
     try:
         ok, _ = fn(text)
         return 'EXITOSO' if ok == expect_ok else 'FALLIDO'
     except Exception as exc:
         return f'ERROR ({exc})'
+
 
 def write_markdown_table(path: str) -> None:
     rows: list[str] = []

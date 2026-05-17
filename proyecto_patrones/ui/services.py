@@ -1,3 +1,7 @@
+# =============================================================================
+# ui/services.py — Lógica de presentación desacoplada de la vista
+# =============================================================================
+
 from __future__ import annotations
 
 import json
@@ -6,19 +10,22 @@ from typing import Any
 
 from patterns.definitions import PATTERNS
 
+
 def export_text_report(content: str, path: str) -> None:
     header = (
         '=' * 72 + '\n'
-        'REPORTE DE ANALISIS DE PATRONES\n'
+        'LUMEN — REPORTE DE ANÁLISIS DE PATRONES\n'
         f'Generado: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}\n'
         '=' * 72 + '\n\n'
     )
     with open(path, 'w', encoding='utf-8') as f:
         f.write(header + content)
 
+
 def export_catalog_json(path: str) -> None:
     payload: dict[str, Any] = {
         'generated_at': datetime.now().isoformat(),
+        'engine': 'RegexEngine (motor propio TLF)',
         'patterns': {
             key: {
                 'name': info['name'],
@@ -33,35 +40,40 @@ def export_catalog_json(path: str) -> None:
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(payload, f, ensure_ascii=False, indent=2)
 
+
 def export_catalog_markdown(path: str) -> None:
     lines = [
-        '# Catalogo de patrones\n',
+        '# Catálogo de Patrones — Lumen TLF\n',
         f'*Exportado: {datetime.now().strftime("%Y-%m-%d %H:%M")}*\n',
     ]
     for key, info in PATTERNS.items():
         lines.append(f'\n## {info["name"]} (`{key}`)\n')
         lines.append(f'{info["description"]}\n')
-        lines.append(f'```\n{info["pattern"]}\n```\n')
-        lines.append('**Validos:** ' + ' · '.join(info['valid_ex'][:4]) + '\n')
-        lines.append('**Invalidos:** ' + ' · '.join(info['invalid_ex'][:4]) + '\n')
+        lines.append(f'```regex\n{info["pattern"]}\n```\n')
+        lines.append('**Válidos:** ' + ' · '.join(info['valid_ex'][:4]) + '\n')
+        lines.append('**Inválidos:** ' + ' · '.join(info['invalid_ex'][:4]) + '\n')
     with open(path, 'w', encoding='utf-8') as f:
         f.writelines(lines)
 
+
 HELP_DOCUMENTATION = """
-AYUDA
+LUMEN — GUÍA RÁPIDA
 
-Escáner de textos
-  1. Marque los patrones a detectar (Seleccionar todos / Ninguno).
-  2. Pegue texto o cargue un archivo .txt.
-  3. Pulse Analizar y revise los resultados.
-  4. Opcional: Exportar reporte.
+▸ Escáner de Textos
+  · Seleccione patrones con los checkboxes o use "Seleccionar todos"
+  · Pegue texto o cargue un archivo .txt
+  · Pulse "Analizar Texto" para detectar coincidencias
+  · Exporte el reporte cuando termine el análisis
 
-Validador interactivo
-  Complete el formulario. Cada campo se valida al escribir.
-  Enviar se habilita cuando los 7 campos obligatorios son correctos.
+▸ Validador Interactivo
+  · Complete el formulario; cada campo se valida en tiempo real
+  · El botón Enviar se habilita cuando todos los obligatorios son válidos
 
-Catálogo de patrones
-  Consulte las expresiones regulares y ejemplos.
-  Use la búsqueda para filtrar por nombre.
-  Exportar guarda el catálogo en JSON o Markdown.
+▸ Catálogo de Patrones
+  · Consulte las expresiones regulares del motor propio
+  · Exporte el catálogo en JSON o Markdown
+  · Use la búsqueda para filtrar por nombre
+
+Motor: Lexer → Parser → NFA (Thompson) → DFA → Match
+Proyecto: Teoría de Lenguajes Formales (TLF)
 """.strip()

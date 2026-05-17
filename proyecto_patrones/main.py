@@ -415,5 +415,17 @@ def run_all_tests():
     print()
 
 
+def run_gui():
+    print("=" * 60)
+    print("  Sistema de Patrones — Teoría de Lenguajes Formales")
+    print("  Iniciando interfaz gráfica Premium...")
+    print("=" * 60)
+    app = PatternApp()
+    app.mainloop()
+
+
 if __name__ == "__main__":
-    run_all_tests()
+    if "--tests" in sys.argv:
+        run_all_tests()
+    else:
+        run_gui()

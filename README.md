@@ -18,7 +18,7 @@ TLF-Proyecto/
     ├── core/                  # Lexer, Parser, NFA, DFA, RegexEngine
     ├── patterns/              # Definición de patrones del dominio
     ├── text_scanner/          # Escáner de texto libre
-    ├── ui/                    # Interfaz (Tkinter)
+    ├── ui/                    # Interfaz Lumen (Tkinter)
     └── tests/                 # Casos de prueba automatizados
 ```
 

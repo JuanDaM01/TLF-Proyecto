@@ -1,4 +1,10 @@
+# =============================================================================
+# validators.py — Reglas de validación del formulario interactivo (Etapa B)
+# Retorna (es_valido, mensaje_error)
+# =============================================================================
+
 from core.engine_manager import EngineManager
+
 
 def validar_nombre(texto: str) -> tuple[bool, str]:
     texto = texto.strip()
@@ -15,6 +21,7 @@ def validar_nombre(texto: str) -> tuple[bool, str]:
     except ValueError as exc:
         return False, str(exc)
 
+
 def validar_email(texto: str) -> tuple[bool, str]:
     texto = texto.strip()
     if not texto:
@@ -25,6 +32,7 @@ def validar_email(texto: str) -> tuple[bool, str]:
         return False, 'Formato inválido. Ej: usuario@dominio.com'
     except (KeyError, ValueError) as exc:
         return False, str(exc)
+
 
 def validar_telefono(texto: str) -> tuple[bool, str]:
     texto = texto.strip()
@@ -37,6 +45,7 @@ def validar_telefono(texto: str) -> tuple[bool, str]:
     except (KeyError, ValueError) as exc:
         return False, str(exc)
 
+
 def validar_fecha(texto: str) -> tuple[bool, str]:
     texto = texto.strip()
     if not texto:
@@ -47,6 +56,7 @@ def validar_fecha(texto: str) -> tuple[bool, str]:
         return False, 'Formato inválido. Use DD/MM/AAAA (Ej: 25/12/1990)'
     except (KeyError, ValueError) as exc:
         return False, str(exc)
+
 
 def validar_cedula(texto: str) -> tuple[bool, str]:
     texto = texto.strip()
@@ -59,6 +69,7 @@ def validar_cedula(texto: str) -> tuple[bool, str]:
     except (KeyError, ValueError) as exc:
         return False, str(exc)
 
+
 def validar_url(texto: str) -> tuple[bool, str]:
     texto = texto.strip()
     if not texto:
@@ -69,6 +80,7 @@ def validar_url(texto: str) -> tuple[bool, str]:
         return False, 'URL inválida. Debe iniciar con http://, https:// o ftp://'
     except (KeyError, ValueError) as exc:
         return False, str(exc)
+
 
 def validar_usuario(texto: str) -> tuple[bool, str]:
     texto = texto.strip()
@@ -85,8 +97,9 @@ def validar_usuario(texto: str) -> tuple[bool, str]:
     except ValueError as exc:
         return False, str(exc)
 
+
 def validar_contrasena(texto: str) -> tuple[bool, str]:
-                                                                                  
+    """Validación compuesta (no regex única): reglas acumulativas de seguridad."""
     if not texto:
         return False, 'La contraseña no puede estar vacía'
     if len(texto) < 8:
@@ -103,6 +116,7 @@ def validar_contrasena(texto: str) -> tuple[bool, str]:
     if faltantes:
         return False, f"Falta: {', '.join(faltantes)}"
     return True, ''
+
 
 FORM_FIELDS = (
     ('nombre', 'Nombre Completo', validar_nombre),
