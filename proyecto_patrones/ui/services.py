@@ -77,3 +77,16 @@ LUMEN — GUÍA RÁPIDA
 Motor: Lexer → Parser → NFA (Thompson) → DFA → Match
 Proyecto: Teoría de Lenguajes Formales (TLF)
 """.strip()
+
+
+HELP_SUPPORT = """
+SOPORTE — PATRONES TLF
+
+Proyecto académico de Teoría de Lenguajes Formales.
+
+· Documentación extendida: carpeta docs/ del repositorio
+· Pruebas automatizadas: python main.py --tests
+· Exportar tabla de casos: python main.py --export-tabla
+
+Para incidencias técnicas, consulte al docente o al equipo del curso.
+""".strip()

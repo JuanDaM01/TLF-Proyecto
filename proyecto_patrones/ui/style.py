@@ -125,19 +125,17 @@ class GradientBackground(tk.Canvas):
 
 class Sidebar(tk.Frame):
     NAV = (
-        ('scanner', '⊞', 'Escáner de Textos'),
-        ('validator', '◎', 'Validador Interactivo'),
-        ('catalog', '▦', 'Catálogo de Patrones'),
+        ('scanner', 'Escáner de textos'),
+        ('validator', 'Validador interactivo'),
+        ('catalog', 'Catálogo de patrones'),
     )
 
-    def __init__(self, parent, on_navigate, on_new_analysis,
-                 on_docs=None, on_support=None, **kw):
+    def __init__(self, parent, on_navigate, on_docs=None, on_support=None, **kw):
         kw.setdefault('bg', T.SIDEBAR)
         kw.setdefault('width', T.SIDEBAR_W)
         super().__init__(parent, **kw)
         self.pack_propagate(False)
         self._on_navigate = on_navigate
-        self._on_new = on_new_analysis
         self._on_docs = on_docs
         self._on_support = on_support
         self._buttons: dict[str, NavItem] = {}
@@ -147,22 +145,16 @@ class Sidebar(tk.Frame):
     def _build(self):
         brand = tk.Frame(self, bg=T.SIDEBAR)
         brand.pack(fill='x', padx=T.SPACE_MD, pady=(T.SPACE_LG, T.SPACE_LG))
-
-        icon = tk.Label(brand, text='◉', bg=T.SIDEBAR, fg=T.ACCENT, font=('Segoe UI', 22))
-        icon.pack(side='left')
-
-        texts = tk.Frame(brand, bg=T.SIDEBAR)
-        texts.pack(side='left', padx=(T.SPACE_SM, 0))
-        tk.Label(texts, text='Lumen', bg=T.SIDEBAR, fg=T.TEXT,
+        tk.Label(brand, text='Patrones TLF', bg=T.SIDEBAR, fg=T.TEXT,
                  font=TypeScale.BRAND, anchor='w').pack(anchor='w')
-        tk.Label(texts, text='ACADEMIC ANALYTICS', bg=T.SIDEBAR, fg=T.TEXT_DIM,
+        tk.Label(brand, text='Teoría de lenguajes formales', bg=T.SIDEBAR, fg=T.TEXT_DIM,
                  font=TypeScale.BRAND_SUB, anchor='w').pack(anchor='w')
 
         nav = tk.Frame(self, bg=T.SIDEBAR)
         nav.pack(fill='x', padx=T.SPACE_SM)
 
-        for key, icon, label in self.NAV:
-            btn = NavItem(nav, icon, label, lambda k=key: self._on_navigate(k))
+        for key, label in self.NAV:
+            btn = NavItem(nav, label, lambda k=key: self._on_navigate(k))
             btn.pack(fill='x', pady=2)
             self._buttons[key] = btn
 
@@ -171,11 +163,8 @@ class Sidebar(tk.Frame):
         bottom = tk.Frame(self, bg=T.SIDEBAR)
         bottom.pack(fill='x', padx=T.SPACE_MD, pady=T.SPACE_LG)
 
-        GlassButton(bottom, '+  New Analysis', variant='primary',
-                    command=self._on_new).pack(fill='x', pady=(0, T.SPACE_MD))
-
         if self._on_docs:
-            LinkLabel(bottom, 'Documentation', self._on_docs).pack(anchor='w', pady=3)
+            LinkLabel(bottom, 'Ayuda', self._on_docs).pack(anchor='w', pady=3)
         if self._on_support:
             LinkLabel(bottom, 'Support', self._on_support).pack(anchor='w', pady=3)
 
@@ -186,7 +175,7 @@ class Sidebar(tk.Frame):
 
 
 class NavItem(tk.Frame):
-    def __init__(self, parent, icon: str, label: str, command, **kw):
+    def __init__(self, parent, label: str, command, **kw):
         super().__init__(parent, bg=T.SIDEBAR, cursor='hand2', **kw)
         self._command = command
         self._active = False
@@ -195,17 +184,14 @@ class NavItem(tk.Frame):
         self._bar.pack(side='left', fill='y')
 
         self._inner = tk.Frame(self, bg=T.SIDEBAR)
-        self._inner.pack(side='left', fill='x', expand=True, padx=(0, T.SPACE_SM), pady=8)
+        self._inner.pack(side='left', fill='x', expand=True, padx=(T.SPACE_SM, T.SPACE_SM), pady=8)
         inner = self._inner
 
-        self._icon_lbl = tk.Label(inner, text=icon, bg=T.SIDEBAR, fg=T.TEXT_DIM,
-                                  font=TypeScale.BODY, width=2)
-        self._icon_lbl.pack(side='left')
         self._text_lbl = tk.Label(inner, text=label, bg=T.SIDEBAR, fg=T.TEXT_SECOND,
                                   font=TypeScale.BODY, anchor='w')
         self._text_lbl.pack(side='left', fill='x', expand=True)
 
-        for w in (self, inner, self._icon_lbl, self._text_lbl):
+        for w in (self, inner, self._text_lbl):
             w.bind('<Button-1>', lambda _: self._command())
             w.bind('<Enter>', self._on_enter)
             w.bind('<Leave>', self._on_leave)
@@ -216,14 +202,13 @@ class NavItem(tk.Frame):
         bar = T.ACCENT if active else T.SIDEBAR
         self._bar.configure(bg=bar)
         self.configure(bg=bg)
-        for w in (self._inner, self._icon_lbl, self._text_lbl):
+        for w in (self._inner, self._text_lbl):
             w.configure(bg=bg)
-        self._icon_lbl.configure(fg=T.ACCENT if active else T.TEXT_DIM)
         self._text_lbl.configure(fg=T.ACCENT if active else T.TEXT_SECOND)
 
     def _on_enter(self, _=None):
         if not self._active:
-            for w in (self, self._inner, self._icon_lbl, self._text_lbl):
+            for w in (self, self._inner, self._text_lbl):
                 w.configure(bg=T.GLASS_HOVER)
 
     def _on_leave(self, _=None):
@@ -239,75 +224,98 @@ class TopBar(tk.Frame):
         self,
         parent,
         title: str = '',
+        subtitle: str = '',
+        show_search: bool = True,
         show_actions: bool = False,
         on_export=None,
-        on_create=None,
-        search_placeholder: str = 'Buscar patrones...',
+        on_search=None,
+        search_placeholder: str = 'Buscar...',
         **kw,
     ):
         kw.setdefault('bg', T.BG_MAIN)
         super().__init__(parent, **kw)
-        self._title_lbl = tk.Label(self, text=title, bg=T.BG_MAIN, fg=T.TEXT,
-                                   font=TypeScale.PAGE_TITLE, anchor='w')
-        self._title_lbl.pack(side='left', padx=(T.SPACE_LG, T.SPACE_MD), pady=T.SPACE_MD)
 
-        center = tk.Frame(self, bg=T.BG_MAIN)
-        center.pack(side='left', fill='x', expand=True, pady=T.SPACE_MD)
-        self._search = SearchEntry(center, placeholder=search_placeholder)
-        self._search.pack(fill='x')
+        left = tk.Frame(self, bg=T.BG_MAIN)
+        left.pack(side='left', fill='y', padx=T.SPACE_LG, pady=T.SPACE_MD)
+        self._title_lbl = tk.Label(left, text=title, bg=T.BG_MAIN, fg=T.TEXT,
+                                 font=TypeScale.PAGE_TITLE, anchor='w')
+        self._title_lbl.pack(anchor='w')
+        if subtitle:
+            tk.Label(left, text=subtitle, bg=T.BG_MAIN, fg=T.TEXT_SECOND,
+                     font=TypeScale.BODY, anchor='w').pack(anchor='w', pady=(T.SPACE_XS, 0))
 
-        right = tk.Frame(self, bg=T.BG_MAIN)
-        right.pack(side='right', padx=T.SPACE_LG, pady=T.SPACE_MD)
+        self._search = None
+        if show_search:
+            self._search = SearchEntry(
+                self, placeholder=search_placeholder, on_change=on_search,
+            )
+            self._search.pack(side='left', fill='x', expand=True,
+                              padx=(T.SPACE_MD, T.SPACE_LG), pady=T.SPACE_MD, ipadx=120)
 
-        if show_actions:
-            if on_export:
-                GlassButton(right, 'Exportar Todo', variant='outline',
-                            command=on_export).pack(side='left', padx=(0, T.SPACE_SM))
-            if on_create:
-                GlassButton(right, '+ Crear Patrón', variant='primary',
-                            command=on_create).pack(side='left', padx=(0, T.SPACE_MD))
-
-        for sym in ('🔔', '⚙', '●'):
-            IconBtn(right, sym).pack(side='left', padx=4)
+        if show_actions and on_export:
+            GlassButton(self, 'Exportar', variant='outline', command=on_export
+                        ).pack(side='right', padx=(0, T.SPACE_LG), pady=T.SPACE_MD)
 
     def set_title(self, title: str):
         self._title_lbl.configure(text=title)
 
+    def get_search_query(self) -> str:
+        return self._search.get_query() if self._search else ''
+
     @property
     def search_var(self) -> tk.StringVar:
-        return self._search.var
+        return self._search.var if self._search else tk.StringVar()
 
 
 class SearchEntry(tk.Frame):
-    def __init__(self, parent, placeholder='Buscar patrones...', **kw):
+    """Campo de busqueda con placeholder y notificacion en cada tecla."""
+
+    def __init__(self, parent, placeholder='Buscar...', on_change=None, **kw):
         super().__init__(parent, bg=T.GLASS, highlightbackground=T.GLASS_BORDER,
                          highlightthickness=1, **kw)
-        self.var = tk.StringVar()
-        tk.Label(self, text='⌕', bg=T.GLASS, fg=T.TEXT_DIM, font=TypeScale.BODY
-                 ).pack(side='left', padx=(12, 4))
-        self._entry = tk.Entry(self, textvariable=self.var, bg=T.GLASS, fg=T.TEXT,
-                               insertbackground=T.ACCENT, font=TypeScale.BODY,
-                               relief='flat', bd=0, width=30)
-        self._entry.pack(side='left', fill='x', expand=True, ipady=8, padx=(0, 12))
         self._ph = placeholder
-        self._entry.insert(0, placeholder)
-        self._entry.configure(fg=T.TEXT_DIM)
+        self._placeholder_active = True
+        self._on_change = on_change
+        self._suppress = False
+
+        self.var = tk.StringVar(value=placeholder)
+        self._entry = tk.Entry(
+            self, textvariable=self.var, bg=T.GLASS, fg=T.TEXT_DIM,
+            insertbackground=T.ACCENT, font=TypeScale.BODY,
+            relief='flat', bd=0,
+        )
+        self._entry.pack(fill='x', expand=True, ipady=8, padx=12, pady=2)
+
         self._entry.bind('<FocusIn>', self._focus_in)
         self._entry.bind('<FocusOut>', self._focus_out)
+        self._entry.bind('<KeyRelease>', lambda _: self._notify())
+        self.var.trace_add('write', lambda *_: self._notify())
 
-    def _focus_in(self, _):
-        if self._entry.get() == self._ph:
-            self._entry.delete(0, 'end')
+    def _focus_in(self, _=None):
+        if self._placeholder_active:
+            self._suppress = True
+            self._placeholder_active = False
+            self.var.set('')
             self._entry.configure(fg=T.TEXT)
+            self._suppress = False
 
-    def _focus_out(self, _):
-        if not self._entry.get():
-            self._entry.insert(0, self._ph)
+    def _focus_out(self, _=None):
+        if not self.var.get().strip():
+            self._suppress = True
+            self._placeholder_active = True
+            self.var.set(self._ph)
             self._entry.configure(fg=T.TEXT_DIM)
+            self._suppress = False
+
+    def _notify(self):
+        if self._suppress or self._placeholder_active or not self._on_change:
+            return
+        self._on_change()
 
     def get_query(self) -> str:
-        val = self.var.get().strip()
-        return '' if val == self._ph else val
+        if self._placeholder_active:
+            return ''
+        return self.var.get().strip()
 
 
 class IconBtn(tk.Label):
@@ -584,19 +592,32 @@ class ResponsiveGrid(tk.Frame):
         self._cols_wide = columns_wide
         self._min_col = min_col
         self._cells: list[tk.Widget] = []
+        self._visible: set[tk.Widget] | None = None
         self.bind('<Configure>', self._relayout)
 
     def add_cell(self, w: tk.Widget):
         self._cells.append(w)
         self._relayout()
 
+    def set_visible(self, widgets: list[tk.Widget] | None):
+        """None = mostrar todas las celdas; lista = solo esas (orden original)."""
+        self._visible = None if widgets is None else set(widgets)
+        self._relayout()
+
+    def _active_cells(self) -> list[tk.Widget]:
+        if self._visible is None:
+            return self._cells
+        return [c for c in self._cells if c in self._visible]
+
     def _relayout(self, _=None):
         w = self.winfo_width()
         cols = max(1, min(self._cols_wide, w // self._min_col)) if w > 1 else 1
         for c in range(cols):
             self.columnconfigure(c, weight=1, uniform='g')
-        for i, cell in enumerate(self._cells):
+        active = self._active_cells()
+        for cell in self._cells:
             cell.grid_forget()
+        for i, cell in enumerate(active):
             r, c = divmod(i, cols)
             cell.grid(row=r, column=c, sticky='nsew', padx=T.SPACE_SM, pady=T.SPACE_SM)
 

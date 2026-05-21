@@ -1,4 +1,3 @@
-"""Punto de entrada rápido — delega en proyecto_patrones.main"""
 import sys
 import os
 

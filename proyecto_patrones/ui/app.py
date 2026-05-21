@@ -18,6 +18,7 @@ from text_scanner.scanner import TextScanner
 from validators import FORM_FIELDS
 from ui.services import (
     HELP_DOCUMENTATION,
+    HELP_SUPPORT,
     export_catalog_json,
     export_catalog_markdown,
     export_text_report,
@@ -29,14 +30,13 @@ from ui.style import (
     FilterToolbar,
     GlassButton,
     GradientBackground,
-    HeroBanner,
     LinkLabel,
     LumenCard,
-    PillBadge,
     ProgressBar,
     ResponsiveGrid,
     ScrollableChecks,
     ScrollableFrame,
+    SearchEntry,
     Sidebar,
     TealCheck,
     TopBar,
@@ -52,7 +52,7 @@ from ui.style import (
 class PatternApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title('Lumen — Academic Analytics · TLF')
+        self.title('Patrones TLF')
         self.geometry('1320x880')
         self.minsize(960, 620)
         self.configure(bg=T.BG_DEEP)
@@ -68,7 +68,6 @@ class PatternApp(tk.Tk):
         self._sidebar = Sidebar(
             shell,
             self._show_view,
-            self._new_analysis,
             on_docs=self._show_docs,
             on_support=self._show_support,
         )
@@ -94,20 +93,11 @@ class PatternApp(tk.Tk):
         self._sidebar.set_active(key)
         self._views[key].on_show()
 
-    def _new_analysis(self):
-        self._scanner.reset()
-        self._show_view('scanner')
-
     def _show_docs(self):
-        messagebox.showinfo('Documentación', HELP_DOCUMENTATION)
+        messagebox.showinfo('Ayuda', HELP_DOCUMENTATION)
 
     def _show_support(self):
-        messagebox.showinfo(
-            'Soporte',
-            'Proyecto TLF — Teoría de Lenguajes Formales\n\n'
-            'Motor regex propio: Lexer → Parser → NFA → DFA\n'
-            'Para incidencias, consulte la documentación del repositorio.',
-        )
+        messagebox.showinfo('Support', HELP_SUPPORT)
 
 
 # ===========================================================================
@@ -137,24 +127,16 @@ class ScannerView(tk.Frame):
         pass
 
     def _build(self):
-        HeroBanner(
-            self,
-            title='Detección inteligente de patrones',
-            subtitle='Motor regex propio · Análisis en milisegundos · Exportación de reportes',
-            metrics=[
-                (str(len(PATTERNS)), 'Patrones'),
-                ('<1ms', 'Por match'),
-                ('100%', 'Offline'),
-            ],
-        ).pack(fill='x', padx=T.SPACE_LG, pady=(T.SPACE_MD, T.SPACE_SM))
+        self._pattern_checks: list[tuple[str, tk.Frame]] = []
 
         self._top = TopBar(
             self,
-            title='Escáner de Textos',
+            title='Escáner de textos',
+            show_search=True,
+            on_search=self._on_search,
             search_placeholder='Buscar en resultados...',
         )
         self._top.pack(fill='x')
-        self._top.search_var.trace_add('write', lambda *_: self._filter_output())
 
         workspace = tk.Frame(self, bg=T.BG_MAIN)
         workspace.pack(fill='both', expand=True, padx=T.SPACE_LG, pady=(0, T.SPACE_LG))
@@ -173,14 +155,25 @@ class ScannerView(tk.Frame):
         )
         self._filter_toolbar.pack(fill='x', pady=(0, T.SPACE_SM))
 
-        checks_scroll = ScrollableChecks(filters.body, height=240)
+        tk.Label(filters.body, text='Filtrar lista', bg=T.GLASS, fg=T.TEXT_DIM,
+                 font=TypeScale.SMALL).pack(anchor='w')
+        self._filter_search = SearchEntry(
+            filters.body, placeholder='Nombre de patron...',
+            on_change=self._filter_pattern_list,
+        )
+        self._filter_search.pack(fill='x', pady=(0, T.SPACE_SM))
+
+        checks_scroll = ScrollableChecks(filters.body, height=220)
         checks_scroll.pack(fill='both', expand=True)
 
         for key, info in PATTERNS.items():
             var = tk.BooleanVar(value=True)
             self._pattern_vars[key] = var
             var.trace_add('write', lambda *_: self._update_filter_count())
-            TealCheck(checks_scroll.panel, info['name'], var).pack(fill='x', pady=2)
+            row = tk.Frame(checks_scroll.panel, bg=T.GLASS)
+            TealCheck(row, info['name'], var).pack(fill='x', padx=2, pady=2)
+            row.pack(fill='x', pady=1)
+            self._pattern_checks.append((key, row))
 
         self._stats = tk.Label(
             filters.body, text='', bg=T.GLASS, fg=T.SUCCESS,
@@ -218,11 +211,8 @@ class ScannerView(tk.Frame):
         self._input.pack(fill='both', expand=True)
         self._input.insert('1.0', self.EJEMPLO)
 
-        self._result_card = LumenCard(right, title='Resultados del Análisis')
+        self._result_card = LumenCard(right, title='Resultados')
         self._result_card.grid(row=1, column=0, sticky='nsew')
-        hdr = self._result_card.body.winfo_children()[0]
-        self._status_badge = PillBadge(hdr, 'STATUS: READY', variant='ready')
-        self._status_badge.pack(side='right')
 
         self._output = scrolledtext.ScrolledText(
             self._result_card.body, bg=T.GLASS_INNER, fg=T.ACCENT_TEAL,
@@ -233,8 +223,8 @@ class ScannerView(tk.Frame):
 
         self._footer = tk.Label(
             self._result_card.body,
-            text='// Total matches found: 0. Analysis pending.',
-            bg=T.GLASS, fg=T.TEXT_DIM, font=TypeScale.MONO_SM, anchor='w',
+            text='Sin analisis aun.',
+            bg=T.GLASS, fg=T.TEXT_DIM, font=TypeScale.SMALL, anchor='w',
         )
         self._footer.pack(fill='x', pady=(T.SPACE_SM, 0))
 
@@ -255,9 +245,8 @@ class ScannerView(tk.Frame):
         self._output.delete('1.0', 'end')
         self._output.config(state='disabled')
         self._last_report = ''
-        self._footer.config(text='// Total matches found: 0. Analysis pending.')
+        self._footer.config(text='Sin analisis aun.')
         self._stats.config(text='')
-        self._status_badge.set_variant('STATUS: READY', 'ready')
         self._set_all_patterns(True)
 
     def _load_file(self):
@@ -292,20 +281,31 @@ class ScannerView(tk.Frame):
         except OSError as exc:
             messagebox.showerror('Error', str(exc))
 
+    def _on_search(self):
+        self._filter_output()
+
+    def _filter_pattern_list(self):
+        q = self._filter_search.get_query().lower()
+        for key, row in self._pattern_checks:
+            name = PATTERNS[key]['name'].lower()
+            visible = not q or q in name or q in key.lower()
+            if visible:
+                row.pack(fill='x', pady=1)
+            else:
+                row.pack_forget()
+
     def _filter_output(self):
-        q = self._top._search.get_query().lower()
-        if not self._last_report or not q:
-            if self._last_report:
-                self._output.config(state='normal')
-                self._output.delete('1.0', 'end')
-                self._output.insert('1.0', self._last_report)
-                self._output.config(state='disabled')
-            return
-        lines = [ln for ln in self._last_report.splitlines() if q in ln.lower()]
-        filtered = '\n'.join(lines) if lines else '(Sin coincidencias para la búsqueda)'
+        q = self._top.get_search_query().lower()
         self._output.config(state='normal')
         self._output.delete('1.0', 'end')
-        self._output.insert('1.0', filtered)
+        if not self._last_report:
+            self._output.insert('1.0', 'Ejecute un analisis para ver resultados.')
+        elif not q:
+            self._output.insert('1.0', self._last_report)
+        else:
+            lines = [ln for ln in self._last_report.splitlines() if q in ln.lower()]
+            text = '\n'.join(lines) if lines else 'Sin coincidencias para la busqueda.'
+            self._output.insert('1.0', text)
         self._output.config(state='disabled')
 
     def _analyze(self):
@@ -318,7 +318,6 @@ class ScannerView(tk.Frame):
             messagebox.showwarning('Aviso', 'Seleccione al menos un patrón.')
             return
 
-        self._status_badge.set_variant('ANALIZANDO...', 'working')
         self.update_idletasks()
 
         t0 = time.perf_counter()
@@ -336,17 +335,13 @@ class ScannerView(tk.Frame):
             self._output.config(state='disabled')
 
             self._footer.config(
-                text=f'// Total matches found: {total}. '
-                     f'Analysis completed in {elapsed}ms.',
+                text=f'{total} coincidencias · {tipos} tipos · {elapsed} ms',
             )
             self._stats.config(
-                text=f'✔ Análisis completado\n'
-                     f'Coincidencias: {total}\n'
-                     f'Tipos detectados: {tipos}/{len(selected)}',
+                text=f'Analisis listo: {total} coincidencias, '
+                     f'{tipos} de {len(selected)} patrones con resultado.',
             )
-            self._status_badge.set_variant('STATUS: READY', 'ready')
         except Exception as exc:
-            self._status_badge.set_variant('ERROR', 'error')
             messagebox.showerror('Error en análisis', str(exc))
 
 
@@ -378,14 +373,16 @@ class ValidatorView(tk.Frame):
         self._update_progress()
 
     def _build(self):
-        HeroBanner(
-            self,
-            title='Validador Interactivo',
-            subtitle='Validación en tiempo real con motor regex y reglas de negocio',
-            metrics=[('7', 'Campos obligatorios'), ('Live', 'Feedback'), ('DFA', 'Motor')],
-        ).pack(fill='x', padx=T.SPACE_LG, pady=(T.SPACE_MD, T.SPACE_SM))
+        self._field_cells: dict[str, tk.Frame] = {}
 
-        TopBar(self, title='', search_placeholder='Filtrar campos...').pack(fill='x')
+        self._top = TopBar(
+            self,
+            title='Validador interactivo',
+            show_search=True,
+            on_search=self._filter_fields,
+            search_placeholder='Buscar campo...',
+        )
+        self._top.pack(fill='x')
 
         outer = tk.Frame(self, bg=T.BG_MAIN)
         outer.pack(fill='both', expand=True, padx=T.SPACE_LG, pady=(0, T.SPACE_LG))
@@ -436,6 +433,7 @@ class ValidatorView(tk.Frame):
                            font=TypeScale.SMALL, anchor='w', wraplength=320)
             msg.pack(anchor='w', pady=(2, 0))
             self._msgs[key] = msg
+            self._field_cells[key] = cell
 
             if validator:
                 box.entry.bind('<KeyRelease>', lambda _, k=key, v=validator: self._validate(k, v))
@@ -463,6 +461,17 @@ class ValidatorView(tk.Frame):
             if k == key:
                 return label
         return key
+
+    def _filter_fields(self):
+        q = self._top.get_search_query().lower()
+        for key, cell in self._field_cells.items():
+            label = self._field_label(key).lower()
+            hint = self._HINTS.get(key, '').lower()
+            match = not q or q in key or q in label or q in hint
+            if match:
+                cell.grid()
+            else:
+                cell.grid_remove()
 
     def _toggle_password(self, _=None):
         self._show_password = not self._show_password
@@ -526,12 +535,6 @@ class ValidatorView(tk.Frame):
 # ===========================================================================
 
 class CatalogView(tk.Frame):
-    ICONS = {
-        'email': '✉', 'telefono_co': '☎', 'fecha': '📅', 'fecha_iso': '📅',
-        'url': '🔗', 'placa_co': '🚗', 'cedula_co': '🪪', 'codigo_postal': '📮',
-        'ipv4': '🌐', 'hora': '🕐', 'hashtag': '#', 'tarjeta_credito': '💳',
-    }
-
     def __init__(self, parent, app: PatternApp):
         super().__init__(parent, bg=T.BG_MAIN)
         self._app = app
@@ -542,23 +545,24 @@ class CatalogView(tk.Frame):
         pass
 
     def _build(self):
-        HeroBanner(
-            self,
-            title='Catálogo de Patrones',
-            subtitle='Expresiones regulares del motor propio — exportables y extensibles',
-            metrics=[(str(len(PATTERNS)), 'Patrones'), ('Regex', 'Motor TLF'), ('JSON', 'Export')],
-        ).pack(fill='x', padx=T.SPACE_LG, pady=(T.SPACE_MD, T.SPACE_SM))
+        self._request_cell: tk.Frame | None = None
 
         self._top = TopBar(
             self,
-            title='',
+            title='Catálogo de patrones',
+            show_search=True,
             show_actions=True,
             on_export=self._export_catalog,
-            on_create=self._create_pattern,
-            search_placeholder='Buscar patrones por nombre...',
+            on_search=self._filter_cards,
+            search_placeholder='Buscar por nombre, clave o descripcion...',
         )
         self._top.pack(fill='x')
-        self._top.set_title('')
+
+        self._count_lbl = tk.Label(
+            self, text=f'{len(PATTERNS)} patrones disponibles',
+            bg=T.BG_MAIN, fg=T.TEXT_SECOND, font=TypeScale.SMALL, anchor='w',
+        )
+        self._count_lbl.pack(fill='x', padx=T.SPACE_LG, pady=(0, T.SPACE_SM))
 
         scroll = ScrollableFrame(self, bg=T.BG_MAIN)
         scroll.pack(fill='both', expand=True, padx=T.SPACE_LG, pady=(0, T.SPACE_LG))
@@ -591,21 +595,14 @@ class CatalogView(tk.Frame):
         ).pack(pady=T.SPACE_SM)
         GlassButton(inner, 'Solicitar', variant='outline',
                     command=self._request_pattern).pack(pady=T.SPACE_SM)
+        self._request_cell = request
         self._grid.add_cell(request)
-
-        self._top.search_var.trace_add('write', lambda *_: self._filter_cards())
 
     def _make_card(self, parent, key, info):
         card = tk.Frame(parent, bg=T.GLASS, highlightbackground=T.GLASS_BORDER,
                         highlightthickness=1, cursor='hand2')
         inner = tk.Frame(card, bg=T.GLASS)
         inner.pack(fill='both', expand=True, padx=T.SPACE_MD, pady=T.SPACE_MD)
-
-        hdr = tk.Frame(inner, bg=T.GLASS)
-        hdr.pack(fill='x')
-        tk.Label(hdr, text=self.ICONS.get(key, '◆'), bg=T.GLASS,
-                 fg=T.ACCENT, font=('Segoe UI', 16)).pack(side='left')
-        PillBadge(hdr, 'Validated', variant='validated').pack(side='right')
 
         tk.Label(inner, text=info['name'], bg=T.GLASS, fg=T.TEXT,
                  font=TypeScale.H2, anchor='w').pack(fill='x', pady=(T.SPACE_SM, T.SPACE_XS))
@@ -640,12 +637,28 @@ class CatalogView(tk.Frame):
         messagebox.showinfo(f'Patrón — {key}', msg)
 
     def _filter_cards(self):
-        q = self._top._search.get_query().lower()
+        q = self._top.get_search_query().lower().strip()
+        if not q:
+            self._grid.set_visible(None)
+            self._count_lbl.config(
+                text=f'{len(PATTERNS)} patrones disponibles',
+            )
+            return
+
+        visible: list[tk.Frame] = []
         for card, key, name in self._card_data:
-            if not q or q in name or q in key:
-                card.grid()
-            else:
-                card.grid_remove()
+            info = PATTERNS[key]
+            texto = (
+                f'{name} {key} {info["name"]} {info["description"]} {info["pattern"]}'
+            ).lower()
+            if q in texto:
+                visible.append(card)
+
+        self._grid.set_visible(visible)
+        n = len(visible)
+        self._count_lbl.config(
+            text=f'{n} patron{"es" if n != 1 else ""} encontrado{"s" if n != 1 else ""}',
+        )
 
     def _export_catalog(self):
         path = filedialog.asksaveasfilename(
