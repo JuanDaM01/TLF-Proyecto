@@ -1,7 +1,3 @@
-# =============================================================================
-# ui/style.py — Tema Lumen (glassmorphism · teal · navy)
-# =============================================================================
-
 from __future__ import annotations
 
 import tkinter as tk
@@ -87,10 +83,6 @@ class Theme:
 T = Theme
 
 
-# ---------------------------------------------------------------------------
-# Fondo
-# ---------------------------------------------------------------------------
-
 class GradientBackground(tk.Canvas):
     ORBS = (
         ('#2bb38c', 0.15, 0.85, 0.35),
@@ -111,17 +103,13 @@ class GradientBackground(tk.Canvas):
             t = i / 20
             c = int(11 + t * 8)
             self.create_rectangle(0, int(h * t), w, int(h * (t + 1 / 20)) + 1,
-                                  fill=f'#{c:02x}{c+4:02x}{c+10:02x}', outline='')
+                                fill=f'#{c:02x}{c+4:02x}{c+10:02x}', outline='')
         for color, nx, ny, sc in self.ORBS:
             cx, cy = int(w * nx), int(h * ny)
             r = int(min(w, h) * sc)
             self.create_oval(cx - r, cy - r, cx + r, cy + r,
-                             fill=color, outline='', stipple='gray50')
+                            fill=color, outline='', stipple='gray50')
 
-
-# ---------------------------------------------------------------------------
-# Sidebar y navegación
-# ---------------------------------------------------------------------------
 
 class Sidebar(tk.Frame):
     NAV = (
@@ -145,10 +133,10 @@ class Sidebar(tk.Frame):
     def _build(self):
         brand = tk.Frame(self, bg=T.SIDEBAR)
         brand.pack(fill='x', padx=T.SPACE_MD, pady=(T.SPACE_LG, T.SPACE_LG))
-        tk.Label(brand, text='Patrones TLF', bg=T.SIDEBAR, fg=T.TEXT,
-                 font=TypeScale.BRAND, anchor='w').pack(anchor='w')
+        tk.Label(brand, text='PATRONES TLF', bg=T.SIDEBAR, fg=T.TEXT,
+                font=TypeScale.BRAND, anchor='w').pack(anchor='w')
         tk.Label(brand, text='Teoría de lenguajes formales', bg=T.SIDEBAR, fg=T.TEXT_DIM,
-                 font=TypeScale.BRAND_SUB, anchor='w').pack(anchor='w')
+                font=TypeScale.BRAND_SUB, anchor='w').pack(anchor='w')
 
         nav = tk.Frame(self, bg=T.SIDEBAR)
         nav.pack(fill='x', padx=T.SPACE_SM)
@@ -188,7 +176,7 @@ class NavItem(tk.Frame):
         inner = self._inner
 
         self._text_lbl = tk.Label(inner, text=label, bg=T.SIDEBAR, fg=T.TEXT_SECOND,
-                                  font=TypeScale.BODY, anchor='w')
+                                font=TypeScale.BODY, anchor='w')
         self._text_lbl.pack(side='left', fill='x', expand=True)
 
         for w in (self, inner, self._text_lbl):
@@ -215,10 +203,6 @@ class NavItem(tk.Frame):
         self.set_active(self._active)
 
 
-# ---------------------------------------------------------------------------
-# Barra superior
-# ---------------------------------------------------------------------------
-
 class TopBar(tk.Frame):
     def __init__(
         self,
@@ -238,11 +222,11 @@ class TopBar(tk.Frame):
         left = tk.Frame(self, bg=T.BG_MAIN)
         left.pack(side='left', fill='y', padx=T.SPACE_LG, pady=T.SPACE_MD)
         self._title_lbl = tk.Label(left, text=title, bg=T.BG_MAIN, fg=T.TEXT,
-                                 font=TypeScale.PAGE_TITLE, anchor='w')
+                                font=TypeScale.PAGE_TITLE, anchor='w')
         self._title_lbl.pack(anchor='w')
         if subtitle:
             tk.Label(left, text=subtitle, bg=T.BG_MAIN, fg=T.TEXT_SECOND,
-                     font=TypeScale.BODY, anchor='w').pack(anchor='w', pady=(T.SPACE_XS, 0))
+                    font=TypeScale.BODY, anchor='w').pack(anchor='w', pady=(T.SPACE_XS, 0))
 
         self._search = None
         if show_search:
@@ -250,7 +234,7 @@ class TopBar(tk.Frame):
                 self, placeholder=search_placeholder, on_change=on_search,
             )
             self._search.pack(side='left', fill='x', expand=True,
-                              padx=(T.SPACE_MD, T.SPACE_LG), pady=T.SPACE_MD, ipadx=120)
+                                padx=(T.SPACE_MD, T.SPACE_LG), pady=T.SPACE_MD, ipadx=120)
 
         if show_actions and on_export:
             GlassButton(self, 'Exportar', variant='outline', command=on_export
@@ -331,10 +315,6 @@ class IconBtn(tk.Label):
         self.bind('<Leave>', lambda _: self.configure(bg=T.GLASS))
 
 
-# ---------------------------------------------------------------------------
-# Tarjetas Lumen
-# ---------------------------------------------------------------------------
-
 class LumenCard(tk.Frame):
     def __init__(self, parent, title: str = '', badge: str = '', mac_dots: bool = False, **kw):
         kw.setdefault('bg', T.GLASS)
@@ -349,7 +329,7 @@ class LumenCard(tk.Frame):
             hdr.pack(fill='x', pady=(0, T.SPACE_SM))
             if title:
                 tk.Label(hdr, text=title, bg=T.GLASS, fg=T.TEXT,
-                         font=TypeScale.H2, anchor='w').pack(side='left')
+                        font=TypeScale.H2, anchor='w').pack(side='left')
             if badge:
                 PillBadge(hdr, badge).pack(side='right')
             if mac_dots:
@@ -357,7 +337,7 @@ class LumenCard(tk.Frame):
                 dots.pack(side='right')
                 for c in (T.DOT_RED, T.DOT_YELLOW, T.DOT_GREEN):
                     tk.Label(dots, text='●', bg=T.GLASS, fg=c, font=('Segoe UI', 7)
-                             ).pack(side='left', padx=2)
+                            ).pack(side='left', padx=2)
 
     def pack_body(self, widget, **kw):
         widget.pack(in_=self.body, **kw)
@@ -389,7 +369,7 @@ class PillBadge(tk.Label):
 
 
 class HeroBanner(tk.Frame):
-    """Franja tipo landing page con métricas y CTA."""
+    """Franja con titulo, subtitulo y metricas."""
 
     def __init__(self, parent, title: str, subtitle: str, metrics: list[tuple[str, str]], **kw):
         kw.setdefault('bg', T.GLASS)
@@ -403,9 +383,9 @@ class HeroBanner(tk.Frame):
         left = tk.Frame(inner, bg=T.GLASS)
         left.pack(side='left', fill='x', expand=True)
         tk.Label(left, text=title, bg=T.GLASS, fg=T.TEXT,
-                 font=TypeScale.PAGE_TITLE, anchor='w').pack(anchor='w')
+                font=TypeScale.PAGE_TITLE, anchor='w').pack(anchor='w')
         tk.Label(left, text=subtitle, bg=T.GLASS, fg=T.TEXT_SECOND,
-                 font=TypeScale.BODY, anchor='w').pack(anchor='w', pady=(T.SPACE_XS, 0))
+                font=TypeScale.BODY, anchor='w').pack(anchor='w', pady=(T.SPACE_XS, 0))
 
         stats = tk.Frame(inner, bg=T.GLASS)
         stats.pack(side='right')
@@ -418,13 +398,13 @@ class StatCard(tk.Frame):
         super().__init__(parent, bg=T.GLASS_INNER, highlightbackground=T.GLASS_BORDER,
                          highlightthickness=1, **kw)
         tk.Label(self, text=value, bg=T.GLASS_INNER, fg=T.ACCENT,
-                 font=(TypeScale.BODY[0], 16, 'bold'), padx=14).pack(pady=(10, 2))
+                font=(TypeScale.BODY[0], 16, 'bold'), padx=14).pack(pady=(10, 2))
         tk.Label(self, text=label.upper(), bg=T.GLASS_INNER, fg=T.TEXT_DIM,
-                 font=TypeScale.CAPS, padx=14).pack(pady=(0, 10))
+                font=TypeScale.CAPS, padx=14).pack(pady=(0, 10))
 
 
 class FilterToolbar(tk.Frame):
-    """Barra seleccionar todos / ninguno + contador (proximidad Gestalt)."""
+    """Seleccionar todos, ninguno y contador."""
 
     def __init__(self, parent, on_select_all, on_select_none, **kw):
         kw.setdefault('bg', T.GLASS)
@@ -471,10 +451,6 @@ class ScrollableChecks(tk.Frame):
             scrollregion=self._canvas.bbox('all')))
         self._canvas.bind('<Configure>', lambda e: self._canvas.itemconfig(self._wid, width=e.width))
 
-
-# ---------------------------------------------------------------------------
-# Botones y campos
-# ---------------------------------------------------------------------------
 
 class GlassButton(tk.Button):
     VARIANTS = {
@@ -529,17 +505,17 @@ class FieldBox(tk.Frame):
         inner.pack(fill='x', padx=1, pady=1)
 
         self.entry = tk.Entry(inner, bg=T.GLASS_INNER, fg=T.TEXT,
-                               insertbackground=T.ACCENT, font=TypeScale.MONO,
-                               relief='flat', bd=0, show=show)
+                            insertbackground=T.ACCENT, font=TypeScale.MONO,
+                            relief='flat', bd=0, show=show)
         self.entry.pack(side='left', fill='x', expand=True, ipady=10, padx=(12, 4))
 
         self.status = tk.Label(inner, text='○', bg=T.GLASS_INNER, fg=T.TEXT_DIM,
-                               font=TypeScale.BODY, width=2)
+                            font=TypeScale.BODY, width=2)
         self.status.pack(side='right', padx=(0, 10))
 
     def set_status(self, state: str):
         icons = {'neutral': ('○', T.TEXT_DIM), 'valid': ('✓', T.SUCCESS),
-                 'invalid': ('✕', T.DANGER)}
+                'invalid': ('✕', T.DANGER)}
         sym, fg = icons.get(state, icons['neutral'])
         self.status.configure(text=sym, fg=fg)
 

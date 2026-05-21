@@ -1,8 +1,3 @@
-# =============================================================================
-# validators.py — Reglas de validación del formulario interactivo (Etapa B)
-# Retorna (es_valido, mensaje_error)
-# =============================================================================
-
 from core.engine_manager import EngineManager
 
 

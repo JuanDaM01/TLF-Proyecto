@@ -1,10 +1,3 @@
-# =============================================================================
-# tests/test_cases.py
-# Suite completa de casos de prueba
-# Cubre todos los patrones con entradas válidas e inválidas.
-# NO usa unittest ni pytest para mantener la independencia de librerías.
-# =============================================================================
-
 import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -16,15 +9,8 @@ from core.engine_manager import EngineManager
 from ui.app import PatternApp
 
 
-# ===========================================================================
-# FRAMEWORK MÍNIMO DE PRUEBAS
-# ===========================================================================
-
 class TestRunner:
-    """
-    Framework de pruebas minimalista sin dependencias externas.
-    Ejecuta casos y reporta resultados con estadísticas.
-    """
+    """Runner de pruebas sin dependencias externas."""
     def __init__(self, name):
         self.name    = name
         self.passed  = 0
@@ -65,51 +51,40 @@ class TestRunner:
         return self.failed == 0
 
 
-# ===========================================================================
-# SUITE 1: MOTOR REGEX — OPERACIONES BÁSICAS
-# ===========================================================================
-
 def test_motor_basico():
     runner = TestRunner("Motor Regex — Operaciones Básicas")
 
-    # --- Caracteres literales ---
     e = RegexEngine(r'abc')
     runner.assert_match(e, 'abc',  True,  "Literal exacto")
     runner.assert_match(e, 'ab',   False, "Literal incompleto")
     runner.assert_match(e, 'abcd', False, "Literal con extra")
     runner.assert_match(e, '',     False, "Vacío vs literal")
 
-    # --- Cuantificador * (cero o más) ---
     e = RegexEngine(r'a*')
     runner.assert_match(e, '',     True,  "Kleene: cadena vacía")
     runner.assert_match(e, 'a',    True,  "Kleene: uno")
     runner.assert_match(e, 'aaa',  True,  "Kleene: varios")
 
-    # --- Cuantificador + (uno o más) ---
     e = RegexEngine(r'a+')
     runner.assert_match(e, '',     False, "Plus: vacío rechazado")
     runner.assert_match(e, 'a',    True,  "Plus: uno aceptado")
     runner.assert_match(e, 'aaaa', True,  "Plus: varios aceptados")
 
-    # --- Cuantificador ? (cero o uno) ---
     e = RegexEngine(r'colou?r')
     runner.assert_match(e, 'color',  True,  "Question: sin 'u'")
     runner.assert_match(e, 'colour', True,  "Question: con 'u'")
     runner.assert_match(e, 'colouur',False, "Question: dos 'u' rechazado")
 
-    # --- Alternación | ---
     e = RegexEngine(r'gato|perro')
     runner.assert_match(e, 'gato',  True,  "Alt: primera opción")
     runner.assert_match(e, 'perro', True,  "Alt: segunda opción")
     runner.assert_match(e, 'conejo',False, "Alt: ninguna opción")
 
-    # --- Metacarácter . ---
     e = RegexEngine(r'a.c')
     runner.assert_match(e, 'abc', True,  "Dot: cualquier char")
     runner.assert_match(e, 'a1c', True,  "Dot: dígito")
     runner.assert_match(e, 'ac',  False, "Dot: falta char medio")
 
-    # --- Clases de caracteres ---
     e = RegexEngine(r'[0-9]+')
     runner.assert_match(e, '123',  True,  "Clase [0-9]+")
     runner.assert_match(e, '0',    True,  "Clase [0-9]+: un dígito")
@@ -119,17 +94,14 @@ def test_motor_basico():
     runner.assert_match(e, 'Hola',  True,  "Clase letras mixtas")
     runner.assert_match(e, 'h3lo',  False, "Clase letras: dígito rechazado")
 
-    # --- Clases negadas ---
     e = RegexEngine(r'[^0-9]+')
     runner.assert_match(e, 'abc',  True,  "Negado [^0-9]+: letras")
     runner.assert_match(e, '123',  False, "Negado [^0-9]+: dígitos rechazados")
 
-    # --- Escape \d ---
     e = RegexEngine(r'\d+')
     runner.assert_match(e, '999',  True,  r"Escape \d+: dígitos")
     runner.assert_match(e, 'abc',  False, r"Escape \d+: letras rechazadas")
 
-    # --- Escape \w ---
     e = RegexEngine(r'\w+')
     runner.assert_match(e, 'user_123', True,  r"Escape \w+: alfanumérico")
     runner.assert_match(e, 'hola!',   False, r"Escape \w+: especial rechazado")
@@ -138,15 +110,10 @@ def test_motor_basico():
     return runner.passed, runner.failed
 
 
-# ===========================================================================
-# SUITE 2: CORREOS ELECTRÓNICOS
-# ===========================================================================
-
 def test_emails():
     runner = TestRunner("Correos Electrónicos")
     e      = RegexEngine(PATTERNS['email']['pattern'])
 
-    # Válidos
     validos = [
         'usuario@ejemplo.com',
         'nombre.apellido@empresa.co',
@@ -158,7 +125,6 @@ def test_emails():
     for email in validos:
         runner.assert_match(e, email, True, f"VÁLIDO: email")
 
-    # Inválidos
     invalidos = [
         '@sinusuario.com',
         'sin_arroba.com',
@@ -171,17 +137,12 @@ def test_emails():
     for email in invalidos:
         runner.assert_match(e, email, False, f"INVÁLIDO: email")
 
-    # Búsqueda en texto
     texto = "Para soporte: ayuda@empresa.com, ventas@tienda.co.uk y spam@fake"
     runner.assert_search_count(e, texto, 2, "Emails en texto")
 
     runner.report()
     return runner.passed, runner.failed
 
-
-# ===========================================================================
-# SUITE 3: TELÉFONOS COLOMBIANOS
-# ===========================================================================
 
 def test_telefonos():
     runner = TestRunner("Teléfonos Colombianos")
@@ -198,7 +159,7 @@ def test_telefonos():
 
     invalidos = [
         '12345',
-        '2001234567',   # No empieza en 3 ni tiene indicativo fijo válido
+        '2001234567',
         '',
         'abc',
     ]
@@ -208,10 +169,6 @@ def test_telefonos():
     runner.report()
     return runner.passed, runner.failed
 
-
-# ===========================================================================
-# SUITE 4: FECHAS
-# ===========================================================================
 
 def test_fechas():
     runner = TestRunner("Fechas DD/MM/AAAA")
@@ -225,10 +182,10 @@ def test_fechas():
         runner.assert_match(e, f, True, f"VÁLIDO: fecha")
 
     invalidos = [
-        '32/01/2023',   # día 32 inválido
-        '15/13/2023',   # mes 13 inválido
-        '15-6-23',      # año de 2 dígitos
-        '2023/06/15',   # formato ISO en lugar de DD/MM/AAAA
+        '32/01/2023',
+        '15/13/2023',
+        '15-6-23',
+        '2023/06/15',
         '',
         '00/00/0000',
     ]
@@ -238,10 +195,6 @@ def test_fechas():
     runner.report()
     return runner.passed, runner.failed
 
-
-# ===========================================================================
-# SUITE 5: URLs
-# ===========================================================================
 
 def test_urls():
     runner = TestRunner("URLs")
@@ -257,11 +210,11 @@ def test_urls():
         runner.assert_match(e, url, True, f"VÁLIDO: URL")
 
     invalidos = [
-        'www.google.com',       # sin esquema
-        'http:/dominio.com',    # falta segunda barra
+        'www.google.com',
+        'http:/dominio.com',
         '://sin-esquema.com',
         '',
-        'htp://typo.com',       # esquema incorrecto
+        'htp://typo.com',
     ]
     for url in invalidos:
         runner.assert_match(e, url, False, f"INVÁLIDO: URL")
@@ -269,10 +222,6 @@ def test_urls():
     runner.report()
     return runner.passed, runner.failed
 
-
-# ===========================================================================
-# SUITE 6: PLACAS VEHICULARES
-# ===========================================================================
 
 def test_placas():
     runner = TestRunner("Placas Vehiculares Colombianas")
@@ -290,18 +239,14 @@ def test_placas():
     return runner.passed, runner.failed
 
 
-# ===========================================================================
-# SUITE 7: IPv4
-# ===========================================================================
-
 def test_ipv4():
     runner = TestRunner("Direcciones IPv4")
     e      = RegexEngine(PATTERNS['ipv4']['pattern'])
 
     validos   = ['192.168.1.1', '10.0.0.1', '255.255.255.0',
-                 '0.0.0.0', '127.0.0.1', '172.16.254.1']
+                '0.0.0.0', '127.0.0.1', '172.16.254.1']
     invalidos = ['256.1.1.1', '192.168.1',
-                 '192.168.1.1.1', '999.0.0.1', '1.2.3']
+                '192.168.1.1.1', '999.0.0.1', '1.2.3']
 
     for ip in validos:
         runner.assert_match(e, ip, True,  "VÁLIDO: IPv4")
@@ -312,27 +257,23 @@ def test_ipv4():
     return runner.passed, runner.failed
 
 
-# ===========================================================================
-# SUITE 8: ESCÁNER DE TEXTO MIXTO
-# ===========================================================================
-
 def test_scanner_texto_mixto():
     runner = TestRunner("Escáner — Texto Mixto con Múltiples Patrones")
 
     texto = """
     Estimado cliente,
-    
+
     Le contactamos desde soporte@empresa.com para informarle sobre su pedido.
     También puede llamarnos al 3201234567 o al fijo 601-5551234.
-    
+
     Su fecha de registro fue el 15/08/2023 y su cédula registrada: 1098765432.
-    
+
     Visite nuestra página en https://www.empresa.com/soporte para más info.
     El servidor de pagos está en 192.168.10.50.
-    
+
     Placa de la moto de reparto: GHI45J
-    Etiqueta en redes: #ServicioExcelente
-    
+    Etiqueta en redes:
+
     Atentamente,
     El equipo de soporte.
     """
@@ -340,7 +281,6 @@ def test_scanner_texto_mixto():
     scanner = TextScanner()
     results = scanner.scan(texto)
 
-    # Verificar que se encontraron los patrones esperados
     runner.assert_true('email'        in results, "Detectó: correo electrónico")
     runner.assert_true('telefono_co'  in results, "Detectó: teléfono")
     runner.assert_true('fecha'        in results, "Detectó: fecha")
@@ -350,7 +290,6 @@ def test_scanner_texto_mixto():
     runner.assert_true('placa_co'     in results, "Detectó: placa")
     runner.assert_true('hashtag'      in results, "Detectó: hashtag")
 
-    # Verificar conteos específicos
     if 'email' in results:
         runner.assert_true(
             len(results['email']) >= 1,
@@ -361,12 +300,8 @@ def test_scanner_texto_mixto():
     return runner.passed, runner.failed
 
 
-# ===========================================================================
-# EJECUCIÓN DE TODAS LAS SUITES
-# ===========================================================================
-
 def run_all_tests():
-    """Ejecuta todas las suites de pruebas y muestra un resumen global."""
+    """Ejecuta todas las suites y muestra resumen."""
     print("\n" + "█" * 65)
     print("  EJECUCIÓN COMPLETA DE CASOS DE PRUEBA")
     print("  Sistema de Patrones — Teoría de Lenguajes Formales")
@@ -396,7 +331,6 @@ def run_all_tests():
             import traceback; traceback.print_exc()
             total_fail += 1
 
-    # Resumen global
     total = total_pass + total_fail
     print("\n" + "█" * 65)
     print("  RESUMEN GLOBAL")

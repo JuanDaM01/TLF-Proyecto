@@ -1,7 +1,3 @@
-# =============================================================================
-# tests/export_table.py — Genera la tabla de casos de prueba (entregable)
-# =============================================================================
-
 from __future__ import annotations
 
 import os

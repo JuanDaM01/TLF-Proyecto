@@ -1,7 +1,3 @@
-# =============================================================================
-# ui/app.py — Lumen TLF · Interfaz profesional completa
-# =============================================================================
-
 from __future__ import annotations
 
 import os
@@ -44,10 +40,6 @@ from ui.style import (
     init_fonts,
 )
 
-
-# ===========================================================================
-# APLICACIÓN PRINCIPAL
-# ===========================================================================
 
 class PatternApp(tk.Tk):
     def __init__(self):
@@ -100,20 +92,16 @@ class PatternApp(tk.Tk):
         messagebox.showinfo('Support', HELP_SUPPORT)
 
 
-# ===========================================================================
-# ESCÁNER
-# ===========================================================================
-
 class ScannerView(tk.Frame):
     EJEMPLO = (
-        'Contacte a juan.perez@empresa.com o soporte@tech.org para más info.\n'
-        'Teléfonos: 3201234567 y +57 310 987 6543. Fijo: 601-5551234.\n'
+        'Contacte a juan.perez@empresa.com o soporte@tech.org para mas info.\n'
+        'Telefonos: 3201234567 y +57 310 987 6543. Fijo: 601-5551234.\n'
         'Sitio web: https://www.mipagina.com/productos?ref=home\n'
-        'Fecha de nacimiento: 15/08/1995. Cédula: 1234567890.\n'
-        'Placa del vehículo: ABC-123. Moto: DEF78G.\n'
+        'Fecha de nacimiento: 15/08/1995. Cedula: 1234567890.\n'
+        'Placa del vehiculo: ABC-123. Moto: DEF78G.\n'
         'Servidor interno: 192.168.0.100. Backup: http://ftp.empresa.net\n'
-        'Horario de atención: 08:00 AM a 06:00 PM.\n'
-        'Síguenos en #ServicioAlCliente #Tecnología2024 #InnovaciónCO'
+        'Horario de atencion: 08:00 AM a 06:00 PM.\n'
+        'Siguenos en #ServicioAlCliente #Tecnologia2024 #InnovacionCO'
     )
 
     def __init__(self, parent, app: PatternApp):
@@ -156,7 +144,7 @@ class ScannerView(tk.Frame):
         self._filter_toolbar.pack(fill='x', pady=(0, T.SPACE_SM))
 
         tk.Label(filters.body, text='Filtrar lista', bg=T.GLASS, fg=T.TEXT_DIM,
-                 font=TypeScale.SMALL).pack(anchor='w')
+                font=TypeScale.SMALL).pack(anchor='w')
         self._filter_search = SearchEntry(
             filters.body, placeholder='Nombre de patron...',
             on_change=self._filter_pattern_list,
@@ -339,15 +327,11 @@ class ScannerView(tk.Frame):
             )
             self._stats.config(
                 text=f'Analisis listo: {total} coincidencias, '
-                     f'{tipos} de {len(selected)} patrones con resultado.',
+                        f'{tipos} de {len(selected)} patrones con resultado.',
             )
         except Exception as exc:
             messagebox.showerror('Error en análisis', str(exc))
 
-
-# ===========================================================================
-# VALIDADOR
-# ===========================================================================
 
 class ValidatorView(tk.Frame):
     _HINTS = {
@@ -393,9 +377,9 @@ class ValidatorView(tk.Frame):
         prog_hdr = tk.Frame(card.body, bg=T.GLASS)
         prog_hdr.pack(fill='x', pady=(0, T.SPACE_SM))
         tk.Label(prog_hdr, text='PROGRESO DE VALIDACIÓN', bg=T.GLASS, fg=T.TEXT_DIM,
-                 font=TypeScale.CAPS).pack(side='left')
+                font=TypeScale.CAPS).pack(side='left')
         self._prog_lbl = tk.Label(prog_hdr, text='Campos Válidos: 0/7', bg=T.GLASS,
-                                  fg=T.ACCENT, font=TypeScale.BODY)
+                                fg=T.ACCENT, font=TypeScale.BODY)
         self._prog_lbl.pack(side='right')
 
         self._progress = ProgressBar(card.body, height=8)
@@ -413,7 +397,7 @@ class ValidatorView(tk.Frame):
             lbl_row = tk.Frame(cell, bg=T.GLASS)
             lbl_row.pack(fill='x')
             tk.Label(lbl_row, text=label, bg=T.GLASS, fg=T.TEXT_SECOND,
-                     font=TypeScale.SMALL).pack(side='left')
+                    font=TypeScale.SMALL).pack(side='left')
             if key == 'password':
                 self._pw_toggle = tk.Label(
                     lbl_row, text='Mostrar', bg=T.GLASS, fg=T.ACCENT,
@@ -427,10 +411,10 @@ class ValidatorView(tk.Frame):
             self._fields[key] = box
 
             tk.Label(cell, text=hint, bg=T.GLASS, fg=T.TEXT_DIM,
-                     font=TypeScale.SMALL, anchor='w').pack(anchor='w')
+                    font=TypeScale.SMALL, anchor='w').pack(anchor='w')
 
             msg = tk.Label(cell, text='', bg=T.GLASS, fg=T.DANGER,
-                           font=TypeScale.SMALL, anchor='w', wraplength=320)
+                            font=TypeScale.SMALL, anchor='w', wraplength=320)
             msg.pack(anchor='w', pady=(2, 0))
             self._msgs[key] = msg
             self._field_cells[key] = cell
@@ -516,7 +500,7 @@ class ValidatorView(tk.Frame):
         datos = {k: b.entry.get().strip() for k, b in self._fields.items()}
         self._result.config(
             text=f'✅ Formulario enviado correctamente\n'
-                 f'Usuario registrado: {datos["nombre"]} (@{datos["usuario"]})',
+                f'Usuario registrado: {datos["nombre"]} (@{datos["usuario"]})',
             fg=T.SUCCESS,
         )
 
@@ -529,10 +513,6 @@ class ValidatorView(tk.Frame):
         self._submit.config(state='disabled')
         self._update_progress()
 
-
-# ===========================================================================
-# CATÁLOGO
-# ===========================================================================
 
 class CatalogView(tk.Frame):
     def __init__(self, parent, app: PatternApp):
@@ -586,11 +566,11 @@ class CatalogView(tk.Frame):
             pady=(T.SPACE_LG, T.SPACE_SM),
         )
         tk.Label(inner, text='Solicitar Patrón', bg=T.GLASS, fg=T.TEXT,
-                 font=TypeScale.H2).pack()
+                font=TypeScale.H2).pack()
         tk.Label(
             inner,
             text='¿Necesitas detectar un formato específico?\n'
-                 'Contacta al equipo o crea un patrón personalizado.',
+                'Contacta al equipo o crea un patrón personalizado.',
             bg=T.GLASS, fg=T.TEXT_DIM, font=TypeScale.SMALL, justify='center',
         ).pack(pady=T.SPACE_SM)
         GlassButton(inner, 'Solicitar', variant='outline',
@@ -605,22 +585,22 @@ class CatalogView(tk.Frame):
         inner.pack(fill='both', expand=True, padx=T.SPACE_MD, pady=T.SPACE_MD)
 
         tk.Label(inner, text=info['name'], bg=T.GLASS, fg=T.TEXT,
-                 font=TypeScale.H2, anchor='w').pack(fill='x', pady=(T.SPACE_SM, T.SPACE_XS))
+                font=TypeScale.H2, anchor='w').pack(fill='x', pady=(T.SPACE_SM, T.SPACE_XS))
         tk.Label(inner, text=info['description'], bg=T.GLASS, fg=T.TEXT_SECOND,
-                 font=TypeScale.SMALL, anchor='w', wraplength=280).pack(fill='x')
+                font=TypeScale.SMALL, anchor='w', wraplength=280).pack(fill='x')
 
         pat = info['pattern'] if len(info['pattern']) <= 72 else info['pattern'][:72] + '…'
         code = tk.Frame(inner, bg=T.GLASS_INNER)
         code.pack(fill='x', pady=T.SPACE_SM)
         tk.Label(code, text=pat, bg=T.GLASS_INNER, fg=T.ACCENT_TEAL,
-                 font=TypeScale.MONO_SM, anchor='w', padx=10, pady=8).pack(fill='x')
+                font=TypeScale.MONO_SM, anchor='w', padx=10, pady=8).pack(fill='x')
 
         tk.Label(inner, text='✓  ' + '   ✓  '.join(info['valid_ex'][:2]),
-                 bg=T.GLASS, fg=T.SUCCESS, font=TypeScale.SMALL,
-                 anchor='w', wraplength=280).pack(fill='x', pady=(T.SPACE_XS, 2))
+                bg=T.GLASS, fg=T.SUCCESS, font=TypeScale.SMALL,
+                anchor='w', wraplength=280).pack(fill='x', pady=(T.SPACE_XS, 2))
         tk.Label(inner, text='✕  ' + '   ✕  '.join(info['invalid_ex'][:2]),
-                 bg=T.GLASS, fg=T.DANGER, font=TypeScale.SMALL,
-                 anchor='w', wraplength=280).pack(fill='x')
+                bg=T.GLASS, fg=T.DANGER, font=TypeScale.SMALL,
+                anchor='w', wraplength=280).pack(fill='x')
 
         for w in (card, inner):
             w.bind('<Button-1>', lambda _, k=key, i=info: self._show_detail(k, i))

@@ -1,7 +1,3 @@
-# =============================================================================
-# ui/services.py — Lógica de presentación desacoplada de la vista
-# =============================================================================
-
 from __future__ import annotations
 
 import json
