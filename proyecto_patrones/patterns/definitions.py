@@ -3,15 +3,15 @@ PATTERNS = {
     'email': {
         'name': 'Correo Electrónico',
         'pattern': (
-            r'[a-zA-Z0-9._+\-]+'
+            r'[a-zA-Z0-9._\-]+'
             r'@'
             r'[a-zA-Z0-9.\-]+'
             r'\.'
             r'[a-zA-Z][a-zA-Z][a-zA-Z]?[a-zA-Z]?[a-zA-Z]?[a-zA-Z]?'
         ),
-        'description': 'Dirección de correo electrónico estándar (RFC 5322 simplificado)',
+        'description': 'Dirección de correo electrónico simplificada (no permite + en la parte local)',
         'valid_ex':   ['usuario@ejemplo.com', 'nombre.apellido@empresa.co',
-                    'contacto+info@dominio.org', 'admin@sub.dominio.edu'],
+                    'admin@sub.dominio.edu'],
         'invalid_ex': ['@sinusuario.com', 'sin_arroba.com',
                     'usuario@', 'usuario@dominio'],
     },

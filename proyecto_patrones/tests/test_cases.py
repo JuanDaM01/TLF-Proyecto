@@ -115,7 +115,6 @@ def test_emails():
     validos = [
         'usuario@ejemplo.com',
         'nombre.apellido@empresa.co',
-        'contacto+info@dominio.org',
         'admin@sub.empresa.edu',
         'test.123@mail.net',
         'a@b.co',
@@ -128,6 +127,7 @@ def test_emails():
         'sin_arroba.com',
         'usuario@',
         'usuario@dominio',
+        'juan+perez@empresa.com',
         'dos@@arrobas.com',
         '',
         'espacio en@medio.com',
@@ -160,6 +160,7 @@ def test_telefonos():
         '2001234567',
         '',
         'abc',
+        '+58 3201234567',
     ]
     for tel in invalidos:
         runner.assert_match(e, tel, False, f"INVÁLIDO: teléfono")
@@ -255,6 +256,54 @@ def test_ipv4():
     return runner.passed, runner.failed
 
 
+def test_fecha_iso():
+    runner = TestRunner("Fecha ISO 8601")
+    e = RegexEngine(PATTERNS['fecha_iso']['pattern'])
+
+    validos = ['2023-06-15', '1999-12-31', '2000-01-01']
+    invalidos = ['23-06-15', '2023-13-01', '2023-00-10', '20230615', '']
+
+    for f in validos:
+        runner.assert_match(e, f, True, "VÁLIDO: fecha_iso")
+    for f in invalidos:
+        runner.assert_match(e, f, False, "INVÁLIDO: fecha_iso")
+
+    runner.report()
+    return runner.passed, runner.failed
+
+
+def test_codigo_postal():
+    runner = TestRunner("Código Postal")
+    e = RegexEngine(PATTERNS['codigo_postal']['pattern'])
+
+    validos = ['110111', '050001', '760020']
+    invalidos = ['11011', '1100111', 'AB1234', '', '12345a']
+
+    for c in validos:
+        runner.assert_match(e, c, True, "VÁLIDO: codigo_postal")
+    for c in invalidos:
+        runner.assert_match(e, c, False, "INVÁLIDO: codigo_postal")
+
+    runner.report()
+    return runner.passed, runner.failed
+
+
+def test_tarjeta_credito():
+    runner = TestRunner("Tarjeta de Crédito")
+    e = RegexEngine(PATTERNS['tarjeta_credito']['pattern'])
+
+    validos = ['4111111111111111', '4111-1111-1111-1111', '4111 1111 1111 1111']
+    invalidos = ['411111111111111', '4111-111-1111-1111', 'abcd1234efgh5678', '', '4111 1111 1111']
+
+    for t in validos:
+        runner.assert_match(e, t, True, "VÁLIDO: tarjeta_credito")
+    for t in invalidos:
+        runner.assert_match(e, t, False, "INVÁLIDO: tarjeta_credito")
+
+    runner.report()
+    return runner.passed, runner.failed
+
+
 def test_scanner_texto_mixto():
     runner = TestRunner("Escáner — Texto Mixto con Múltiples Patrones")
 
@@ -270,7 +319,7 @@ def test_scanner_texto_mixto():
     El servidor de pagos esta en 192.168.10.50.
 
     Placa de la moto de reparto: GHI45J
-    Etiqueta en redes:
+    Etiqueta en redes: #Envio
 
     Atentamente,
     El equipo de soporte.
@@ -310,9 +359,12 @@ def test_validadores_formulario():
         (validar_nombre, 'María García', True),
         (validar_nombre, 'Solo', False),
         (validar_email, 'a@b.co', True),
+        (validar_email, 'juan+perez@empresa.com', False),
         (validar_email, 'no-email', False),
         (validar_telefono, '3001234567', True),
         (validar_telefono, '123', False),
+        (validar_telefono, '+57 3201234567', True),
+        (validar_telefono, '+58 3201234567', False),
         (validar_fecha, '25/12/1990', True),
         (validar_fecha, '32/13/1990', False),
         (validar_cedula, '1234567890', True),
@@ -345,9 +397,12 @@ def run_all_tests():
         ("Correos",              test_emails),
         ("Telefonos",            test_telefonos),
         ("Fechas",               test_fechas),
+        ("Fecha ISO",            test_fecha_iso),
         ("URLs",                 test_urls),
         ("Placas",               test_placas),
         ("IPv4",                 test_ipv4),
+        ("Codigo Postal",        test_codigo_postal),
+        ("Tarjeta Credito",      test_tarjeta_credito),
         ("Escaner Mixto",        test_scanner_texto_mixto),
         ("Validador Formulario", test_validadores_formulario),
     ]
