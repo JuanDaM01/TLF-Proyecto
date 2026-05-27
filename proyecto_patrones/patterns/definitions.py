@@ -93,10 +93,14 @@ PATTERNS = {
 
     'cedula_co': {
         'name': 'Cédula de Ciudadanía',
-        'pattern': r'[1-9][0-9][0-9][0-9][0-9][0-9]([0-9][0-9][0-9][0-9])?',
-        'description': 'Cédula de ciudadanía colombiana: 6 a 10 dígitos',
-        'valid_ex':   ['123456', '1234567890', '987654321'],
-        'invalid_ex': ['12345', '12345678901', '01234567'],
+        'pattern': (
+            r'[1-9]'
+            r'[0-9][0-9][0-9][0-9][0-9][0-9]'
+            r'([0-9]([0-9]([0-9])?)?)?'
+        ),
+        'description': 'Cédula de ciudadanía colombiana: 7 a 10 dígitos',
+        'valid_ex':   ['1234567', '12345678', '1234567890'],
+        'invalid_ex': ['123456', '12345678901', '01234567'],
     },
 
     'codigo_postal': {

@@ -60,7 +60,7 @@ def validar_cedula(texto: str) -> tuple[bool, str]:
     try:
         if EngineManager.get('cedula_co').match(texto):
             return True, ''
-        return False, 'Debe tener entre 6 y 10 dígitos, sin separadores'
+        return False, 'Debe tener entre 7 y 10 dígitos, sin separadores'
     except (KeyError, ValueError) as exc:
         return False, str(exc)
 
